@@ -13,6 +13,6 @@ flavors:
     loader_module: mlflow.catboost
     python_version: 3.12.3
 mlflow_version: 2.20.3
-model_size_bytes: 1118536
-model_uuid: 5231cbc521254df094e81e5ef43e05b1
-utc_time_created: '2025-03-05 12:53:01.711229'
+model_size_bytes: 1395144
+model_uuid: 91cae1baea5f454e8c406a60d30ed3dd
+utc_time_created: '2025-03-05 13:18:27.088707'

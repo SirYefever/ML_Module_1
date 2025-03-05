@@ -4,6 +4,8 @@ import pandas as pd
 from catboost import CatBoostClassifier
 import mlflow.catboost
 import argparse
+import optuna
+from sklearn.model_selection import cross_val_score
 
 
 def recreate_folder(path):
@@ -18,12 +20,31 @@ class My_Classifier_Model:
     predictions_path = "/home/xee/dev/python/MlWithCats/src/mlwithcats/predictions/result.csv"
     model_folder_path = "/home/xee/dev/python/MlWithCats/src/mlwithcats/code/model"
 
+    result = pd.DataFrame()
+    y = pd.DataFrame()
+
+    def objective(self, trial):
+        params = {
+            'iterations': trial.suggest_int('iterations', 100, 1000),
+            'depth': trial.suggest_int('depth', 4, 10),
+            'learning_rate': trial.suggest_float('learning_rate', 1e-3, 0.1, log=True),
+            'l2_leaf_reg': trial.suggest_float('l2_leaf_reg', 1e-8, 100.0, log=True),
+            'border_count': trial.suggest_int('border_count', 32, 255),
+            'min_child_samples': trial.suggest_int('min_child_samples', 1, 100),
+            'grow_policy': trial.suggest_categorical('grow_policy', ['SymmetricTree', 'Depthwise', 'Lossguide']),
+        }
+
+        model = CatBoostClassifier(**params, logging_level='Silent')
+        score = cross_val_score(model, self.result, self.y,
+                                cv=5, scoring='accuracy').mean()
+        return score
+
     def train(self, path_to_dataset):
         print("Training...")
 
         data = pd.read_csv(path_to_dataset)
         X = data.drop('Transported', axis=1)
-        y = data['Transported']
+        self.y = data['Transported']
 
         booleanColumns = ["CryoSleep", "VIP"]
         bools = X.copy()[booleanColumns]
@@ -38,17 +59,22 @@ class My_Classifier_Model:
         dummies = pd.get_dummies(X.copy()[columnsForDummies])
         dummies["PassengerId"] = X["PassengerId"]
 
-        result = numerics.merge(dummies, on='PassengerId', how='left')
-        result = result.merge(bools, on='PassengerId', how='left')
-        result = result.drop("PassengerId", axis=1)
+        self.result = numerics.merge(dummies, on='PassengerId', how='left')
+        self.result = self.result.merge(bools, on='PassengerId', how='left')
+        self.result = self.result.drop("PassengerId", axis=1)
 
-        model = CatBoostClassifier()
+        study = optuna.create_study(direction='maximize')
+        study.optimize(self.objective, n_trials=5)
+        best_params = study.best_params
 
-        model.fit(result, y, logging_level='Silent')
+        model = CatBoostClassifier(**best_params, logging_level='Silent')
+        model.fit(self.result, self.y, logging_level='Silent')
+
         try:
             recreate_folder(self.model_folder_path)
             mlflow.catboost.save_model(
                 cb_model=model, path=self.model_folder_path)
+            print("Model saved into a folder.")
         except:
             print("Saving model into folder failed.")
 
