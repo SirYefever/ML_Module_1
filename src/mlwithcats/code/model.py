@@ -18,7 +18,7 @@ class My_Classifier_Model:
     predictions_path = "/home/xee/dev/python/MlWithCats/src/mlwithcats/predictions/result.csv"
     model_folder_path = "/home/xee/dev/python/MlWithCats/src/mlwithcats/code/model"
 
-    def train(path_to_dataset, self):
+    def train(self, path_to_dataset):
         print("Training...")
 
         data = pd.read_csv(path_to_dataset)
@@ -48,11 +48,11 @@ class My_Classifier_Model:
         try:
             recreate_folder(self.model_folder_path)
             mlflow.catboost.save_model(
-                cb_model=model, path=self.moder_folder_path)
+                cb_model=model, path=self.model_folder_path)
         except:
-            print("Saving model files into folder failed.")
+            print("Saving model into folder failed.")
 
-    def predict(path_to_dataset, self):
+    def predict(self, path_to_dataset):
         print("Predicting...")
 
         test_data = pd.read_csv(path_to_dataset)
