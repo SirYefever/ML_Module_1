@@ -6,7 +6,11 @@ import mlflow.catboost
 import argparse
 import optuna
 from sklearn.model_selection import cross_val_score
+from clearml.automation import RandomSearch
 
+from clearml import Task
+from clearml.automation import HyperParameterOptimizer, UniformIntegerParameterRange, DiscreteParameterRange
+from clearml.automation.optuna import OptimizerOptuna
 
 def recreate_folder(path):
     if os.path.exists(path):
@@ -115,8 +119,8 @@ class My_Classifier_Model:
         except:
             print("Saving result to file failed!")
 
-
 if __name__ == '__main__':
+    task = Task.init(task_name="Executing_model", project_name="MlWithCats")
     classifier = My_Classifier_Model()
 
     parser = argparse.ArgumentParser(description="Your script description")
