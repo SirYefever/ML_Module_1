@@ -11,3 +11,7 @@ In MlWithCats folder:
 `poetry run python ./src/mlwithcats/code/model.py --path_to_dataset="<path_to_dataset>" predict`
 
 Results get saved into MlWithCats/src/mlwithcats/predictions folder.
+
+### Datasets:
+You can find initial datasets for testing/training following this path:
+`/MlWithCats/src/mlwithcats/data`
