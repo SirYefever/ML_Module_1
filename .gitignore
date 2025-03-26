@@ -1,0 +1,8 @@
+/clearml-serving
+/catboost_info
+/tests
+/mlruns
+/src/mlwithcats/catboost_info
+/src/mlwithcats/mlruns
+/src/mlwithcats/predictions
+/src/mlwithcats/__init__.py
