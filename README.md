@@ -3,7 +3,7 @@ This repository allows you to train the model to predict whether spaceship's cre
 Here is kaggle competition link:
 https://www.kaggle.com/competitions/tsumladvanced2025
 
-##Running the project:
+## Running the project:
 In MlWithCats folder:
 ### To train:
 `poetry run python ./src/mlwithcats/code/model.py --path_to_dataset="<path_to_dataset>" train`
