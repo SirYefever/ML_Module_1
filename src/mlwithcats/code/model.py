@@ -7,6 +7,7 @@ import argparse
 import optuna
 from sklearn.model_selection import cross_val_score
 from clearml.automation import RandomSearch
+from clearml import Dataset
 
 from clearml import Task
 from clearml.automation import HyperParameterOptimizer, UniformIntegerParameterRange, DiscreteParameterRange
@@ -28,6 +29,15 @@ class My_Classifier_Model:
     y = pd.DataFrame()
 
     def objective(self, trial):
+        """
+        Define the objective function for Optuna hyperparameter optimization.
+
+        Parameters:
+        trial (optuna.trial.Trial)
+
+        Returns:
+        float: Mean accuracy score
+        """
         params = {
             'iterations': trial.suggest_int('iterations', 100, 1000),
             'depth': trial.suggest_int('depth', 4, 10),
@@ -44,6 +54,19 @@ class My_Classifier_Model:
         return score
 
     def train(self, path_to_dataset):
+        """
+        Train a CatBoost classifier on the given dataset using Optuna for
+        hyperparameter optimization.
+
+        Parameters:
+        path_to_dataset (str): Path to the CSV file containing the dataset
+
+        Raises:
+        Exception: If saving the model fails
+
+        Returns:
+        None.
+        """
         print("Training...")
 
         data = pd.read_csv(path_to_dataset)
@@ -83,6 +106,16 @@ class My_Classifier_Model:
             print("Saving model into folder failed.")
 
     def predict(self, path_to_dataset):
+        """
+        Predict outcomes based on the input dataset and save results to a CSV file.
+
+        Parameters:
+        path_to_dataset (str): Path to the input dataset in CSV format.
+
+        Returns:
+        None.
+
+        """
         print("Predicting...")
 
         test_data = pd.read_csv(path_to_dataset)
@@ -119,6 +152,7 @@ class My_Classifier_Model:
         except:
             print("Saving result to file failed!")
 
+
 if __name__ == '__main__':
     task = Task.init(task_name="Executing_model", project_name="MlWithCats")
     classifier = My_Classifier_Model()
@@ -130,6 +164,13 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.method == "train":
+        dataset = Dataset.create(dataset_name="train.csv", dataset_project="MlWithCats")
+        dataset.add_files(path=args.path_to_dataset)
+        task.upload_artifact('mlflow_model', artifact_object=classifier.model_folder_path)
         classifier.train(args.path_to_dataset)
     elif args.method == "predict":
+        dataset = Dataset.create(dataset_name="test.csv", dataset_project="MlWithCats")
+        dataset.add_files(path=args.path_to_dataset)
         classifier.predict(args.path_to_dataset)
+    dataset.upload()
+    dataset.finalize()
